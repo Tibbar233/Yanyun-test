@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>燕雲十六聲 · 江湖問答</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --ink-light: #2e2010;
+    --paper: #f5ede0;
+    --paper-dark: #e8dcc8;
+    --red: #b83232;
+    --red-light: #d94040;
+    --gold: #c8960a;
+    --gold-light: #f0b822;
+    --green: #2d6b40;
+    --green-light: #3a8a52;
+    --muted: #7a6a50;
+    --brush: rgba(26,18,8,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: #1a1208;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(90,50,10,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(60,30,5,0.2) 0%, transparent 55%);
+    min-height: 100vh;
+    font-family: 'Noto Sans TC', sans-serif;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  /* Ink splash decorations */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -80px; left: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(180,80,20,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -60px; right: -60px;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(140,60,10,0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    background: var(--paper);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    border-radius: 4px;
+    max-width: 520px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(200,150,10,0.15);
+    overflow: hidden;
+  }
+
+  /* Top decorative border */
+  .card::before {
+    content: '';
+    display: block;
+    height: 5px;
+    background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--red) 50%, var(--gold) 80%, transparent);
+  }
+
+  .card-inner { padding: 1.75rem 2rem 2rem; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(200,150,10,0.25);
+    position: relative;
+  }
+  .header::after {
+    content: '✦';
+    position: absolute;
+    bottom: -0.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--paper);
+    padding: 0 0.5rem;
+    color: var(--gold);
+    font-size: 12px;
+  }
+  .title-main {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: 0.15em;
+  }
+  .title-sub {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.25em;
+    margin-top: 4px;
+  }
+
+  /* Meta row */
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.9rem;
+  }
+  .q-counter {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .q-counter span { color: var(--red); font-weight: 700; }
+  .score-badge {
+    background: var(--ink);
+    color: var(--gold-light);
+    font-size: 12px;
+    font-family: 'Noto Serif TC', serif;
+    padding: 3px 12px;
+    border-radius: 99px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Progress */
+  .prog-wrap {
+    height: 3px;
+    background: rgba(26,18,8,0.12);
+    border-radius: 99px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .prog-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  /* Question box */
+  .q-box {
+    background: rgba(26,18,8,0.04);
+    border: 1px solid rgba(200,150,10,0.2);
+    border-radius: 4px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+  .q-box::before {
+    content: '問';
+    position: absolute;
+    top: -11px; left: 16px;
+    background: var(--red);
+    color: #fff;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+  }
+  .q-text {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 15.5px;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.7;
+  }
+
+  /* Options */
+  .opts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .opt {
+    background: var(--paper-dark);
+    border: 1.5px solid rgba(26,18,8,0.14);
+    border-radius: 3px;
+    padding: 11px 12px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    line-height: 1.45;
+    position: relative;
+  }
+  .opt .opt-label {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(26,18,8,0.1);
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    text-align: center;
+    line-height: 18px;
+    margin-right: 7px;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+  .opt:hover:not(:disabled) {
+    background: #dfd0b0;
+    border-color: rgba(180,60,20,0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  }
+  .opt:disabled { cursor: default; transform: none; }
+  .opt.correct {
+    background: #dff0e4;
+    border: 2px solid var(--green);
+    color: #1a4028;
+  }
+  .opt.correct .opt-label { background: var(--green); color: #fff; }
+  .opt.wrong {
+    background: #f5dada;
+    border: 2px solid var(--red);
+    color: #5a1010;
+  }
+  .opt.wrong .opt-label { background: var(--red); color: #fff; }
+
+  /* Result banner */
+  .result {
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: 'Noto Serif TC', serif;
+    line-height: 1.6;
+    display: none;
+    border-left: 3px solid transparent;
+  }
+  .result.show { display: block; }
+  .result.ok {
+    background: #dff0e4;
+    border-color: var(--green);
+    color: #1a4028;
+  }
+  .result.no {
+    background: #f5dada;
+    border-color: var(--red);
+    color: #5a1010;
+  }
+
+  /* End screen */
+  .end-screen {
+    text-align: center;
+    padding: 2.5rem 1rem;
+  }
+  .end-seal {
+    width: 80px;
+    height: 80px;
+    background: var(--red);
+    border-radius: 4px;
+    margin: 0 auto 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -2px;
+    transform: rotate(-5deg);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  }
+  .end-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+  .end-score {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .end-score strong { color: var(--red); font-size: 22px; font-family: 'Noto Serif TC', serif; }
+  .end-msg {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13.5px;
+    color: var(--ink-light);
+    margin-bottom: 1.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(26,18,8,0.04);
+    border: 1px solid rgba(200,150,10,0.2);
+    border-radius: 3px;
+    line-height: 1.7;
+  }
+  .restart-btn {
+    background: var(--ink);
+    color: var(--gold-light);
+    border: none;
+    padding: 10px 32px;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+  .restart-btn:hover { background: #2e2010; }
+
+  /* Divider watermark */
+  .watermark {
+    text-align: center;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 11px;
+    color: rgba(122,106,80,0.4);
+    letter-spacing: 0.3em;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(200,150,10,0.15);
+  }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .q-box, .opts { animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="card::before"></div>
+  <div class="card-inner">
+    <div class="header">
+      <div class="title-main">燕雲十六聲</div>
+      <div class="title-sub">江湖問答 · 五十問</div>
+    </div>
+    <div class="meta-row">
+      <div class="q-counter">第 <span id="qnum">1</span> / 50 題</div>
+      <div class="score-badge">得分 <span id="score">0</span></div>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="prog" style="width:2.86%"></div></div>
+    <div class="q-box"><div class="q-text" id="qtext"></div></div>
+    <div class="opts" id="opts"></div>
+    <div class="result" id="result"></div>
+    <div class="watermark">燕雲問道 · 江湖無界</div>
+  </div>
+</div>
+
+<script>
+const LABELS = ['甲','乙','丙','丁'];
+const QS = [
+  {q:"燕雲十六聲的故事背景設定在哪個歷史時期？",o:["唐朝全盛時期","五代十國至宋初","元朝","明朝"],a:1},
+  {q:"燕雲十六聲由哪間公司開發？",o:["米哈遊","騰訊","網易旗下 Everstone 工作室","完美世界"],a:2},
+  {q:"遊戲中玩家扮演的角色，在神仙渡被稱為什麼？",o:["俠客","書生","少東家","將軍"],a:2},
+  {q:"以下哪個「不是」遊戲的 7 大主武器之一？",o:["陌刀","弓箭","繩鏢","傘"],a:1},
+  {q:"繩鏢這個武器的武學精神是什麼？",o:["以快制慢","以重制輕","以柔克剛","以毒攻毒"],a:2},
+  {q:"以下哪個是遊戲中的奇術？",o:["凌波微步","蛤蟆功","降龍十八掌","六脈神劍"],a:1},
+  {q:"鄭鄂的身份背景是什麼？",o:["朝廷將領","江湖殺手","本想救世，卻因世道不公走向歧路的男子","契丹間諜"],a:2},
+  {q:"開封「常平倉」事件中，被鄭鄂劫持並冒名頂替的官員是誰？",o:["趙光義","沈義倫","東闕公子","慕容延釗"],a:1},
+  {q:"鄭鄂用來製作「夢傀」大軍的劇毒植物叫做什麼？",o:["曼陀羅花","朝生暮落花","彼岸花","斷腸草"],a:1},
+  {q:"遊戲名稱中的「燕雲十六」源自歷史上的什麼？",o:["十六位武林高手的傳說","後晉割讓給契丹的燕雲十六州","十六種武器流派","皇帝頒布的十六條律令"],a:1},
+  {q:"遊戲地圖中那個以黑市交易聞名的神秘場所叫做什麼？",o:["暗閣","繡金樓","鬼市","迷香閣"],a:2},
+  {q:"燕雲十六聲深度還原了多少種中國傳統文化？",o:["八種","十二種","十六種","二十種"],a:2},
+  {q:"以下哪個武學能在戰鬥中為隊友補血？",o:["九重春色","明川藥典","青山執筆","嗟夫刀法"],a:1},
+  {q:"容鳶與李守節是什麼關係？",o:["師徒","夫妻","姐弟","死對頭"],a:2},
+  {q:"東闕公子（溫無缺）落難開封後，為何化名「盈盈」？",o:["因為龜奶奶叫她盈盈","這是她在未央城時的舊名","頂替了龜奶奶因契丹屠城而死的女兒的名字","盈盈是哥哥溫無痕幫她取的名字"],a:2},
+  {q:"燕雲十六聲整個遊戲世界的地圖面積，相當於現實中的多少平方公里？",o:["5 平方公里","20 平方公里","50 平方公里","100 平方公里"],a:1},
+  {q:"鄭鄂靠什麼能力冒充常平使沈義倫的身份？",o:["自己長相神似","花了多年練習模仿","借助「洛神」的易容術","用毒藥控制官員"],a:2},
+  {q:"鄭鄂從常平倉偷運的糧食，靠哪個組織轉運到鬼市接濟百姓？",o:["九流門","赤龍堂","繡金樓","未央城"],a:1},
+  {q:"開局時玩家自帶的劍法叫做什麼？",o:["積矩九劍","八方槍法","無名劍法","嗟夫刀法"],a:2},
+  {q:"遊戲中有多少個獨特 NPC？",o:["一千個以上","五千個以上","一萬個以上","兩萬個以上"],a:2},
+  {q:"清河鎮守最終BOSS「田英」，他在民間以什麼身份掩護自己？",o:["江湖說書人","採藥大夫","妙善禪師","雲遊道士"],a:2},
+  {q:"「無相皇」是由誰撫養長大的？",o:["江無浪","李祚","柳青衣","寒香尋"],a:2},
+  {q:"現任河伯「馮夷」的前一任河伯是誰？",o:["馮如之","朱魚","張彥霖","張錯"],a:1},
+  {q:"龍蛟幫分裂後，赤龍堂與青蛟堂的根本區別是？",o:["赤龍堂負責水路、青蛟堂負責陸路","赤龍堂是攻擊型、青蛟堂是防守型","青蛟堂投靠朝廷、赤龍堂繼續守護天上來","兩堂只是左右分堂，立場相同"],a:2},
+  {q:"「小十七」這個外號是怎麼來的？",o:["他是懸劍裡第十七名弟子","他十七歲才開始學武","他十七歲時將匪窩三十七人盡數斬殺，從此聞名江湖","他排行老十七"],a:2},
+  {q:"張錯是誰？",o:["赤龍堂堂主，天上來的守護者","青蛟堂堂主，投靠朝廷的一方","現任河伯，黃河水道的掌控者","繡金樓在漕運的線人"],a:1},
+  {q:"遊戲中「南燭公子」的真實身份是誰？",o:["南唐宰相韓熙載","未央城城主","南唐皇帝李煜","南唐太子李仲寓"],a:2},
+  {q:"李煜以「南燭公子」身份秘密做了什麼來干擾趙宋？",o:["親自帶兵偷襲開封","收買趙光義成為內應","創作《乞憐歌》透過東闕公子在開封傳播，挑撥官民對立","偽造宋太祖的聖旨引發內亂"],a:2},
+  {q:"寒香尋在江湖上的神秘稱號是什麼？",o:["摘星手","月神","洛神","天女"],a:2},
+  {q:"江無浪的真名是什麼？他為何被江湖通緝？",o:["江遠，因盜取天泉秘籍","江晏，因殺死義父王清而被扣上「弒父奪玉」之名","江晏，因洩露懸劍的機密","江潮，因中渡橋之戰臨陣脫逃"],a:1},
+  {q:"繡金樓的真正樓主「李祚」，他的真實歷史身份是？",o:["南唐最後一位皇帝李煜","後晉末代皇帝石重貴","唐朝最後一位皇帝唐哀帝","後周世宗柴榮的舊部"],a:2},
+  {q:"繡金樓的終極目標是什麼？",o:["消滅趙宋，恢復唐朝江山","控制南唐，統一中原","讓所有人變成「無欲長生體」，建立永無紛爭的「萬世新唐」","找到鎮冠珏，獲得不死之身"],a:2},
+  {q:"「懸劍」這個組織是由誰創立的？",o:["王清","田英","後周世宗柴榮","江無浪的父親江遠"],a:2},
+  {q:"清河「善妙洲」惡僧頭目「慧藥」，原本是誰的弟子？",o:["王清","李祚","妙善禪師","江無浪"],a:2},
+  {q:"慧藥性情大變後佔據善妙洲為王，他自號什麼？",o:["魔王","佛爺","法王","天王"],a:1},
+  {q:"遊戲中「長鳴玉」和「長鳴珠」最主要的差異是什麼？",o:["長鳴玉只能升級武器，長鳴珠用來抽卡","長鳴玉是課金貨幣，長鳴珠是免費獲得的","長鳴玉只能抽常駐外觀，長鳴珠可購買所有商城道具","兩者功能完全相同，只是名稱不同"],a:2},
+  {q:"遊戲中「頓悟值」主要用途是什麼？",o:["購買商城時裝","提升角色天賦等級","強化武器裝備","兌換坐騎"],a:1},
+  {q:"繡金樓樓主「李祚」和「南燭公子」李煜，他們分別是哪兩個政權的末代皇帝？",o:["李祚是後唐皇帝，李煜是南漢皇帝","李祚是唐朝末代皇帝（唐哀帝），李煜是南唐末代皇帝（南唐後主）","兩人都是南唐的皇帝，是父子關係","李祚是前蜀皇帝，李煜是後蜀皇帝"],a:1},
+  {q:"突破「武學」到下一重，主要消耗什麼材料？",o:["長鳴珠","長鳴玉","武學心得","烏金鐵"],a:2},
+  {q:"購買月卡後，累計登入幾天可額外獲得「袅袅之音」1個？",o:["10天","15天","20天","30天"],a:2},
+  {q:"「八音竅」兌換頂級完整外觀套裝（含髮型、服裝、配件等）需要幾個？",o:["1個","2個","3個","5個"],a:1},
+  {q:"和鳴池進行一次抽卡（裊裊之音）需要消耗多少顆長鳴珠？",o:["60顆","100顆","160顆","200顆"],a:2},
+  {q:"「和鳴」抽卡池，保底幾抽內必得大獎？",o:["80抽","120抽","150抽","200抽"],a:2},
+  {q:"商城中最平價的常駐時裝「梨花淚」售價是多少長鳴珠？",o:["30","60","120","180"],a:1},
+  {q:"購買月卡每月可獲得多少顆長鳴珠？",o:["100","200","300","500"],a:2},
+  {q:"購買月卡後，每天登入遊戲可以獲得多少顆「長鳴玉」？",o:["50顆","100顆","200顆","300顆"],a:1},
+  {q:"使用「折音券」購買商城時裝，最低可以打到幾折？",o:["3折","5折","7折","8折"],a:1},
+  {q:"商城中頂級珍藏套裝的最高售價約為多少長鳴珠？",o:["1280","1680","2580","3600"],a:2},
+  {q:"台服「精英戰令」的售價約為多少台幣？",o:["158元","315元","480元","630元"],a:1},
+  {q:"台服「典藏戰令」的售價約為多少台幣？",o:["315元","480元","630元","945元"],a:2},
+];
+
+const SEALS = {
+  perfect: { char:'俠', msg:'滿分五十題！江湖中恐怕無人能出其右，真正的燕雲行家！' },
+  great:   { char:'義', msg:'深諳燕雲世界，連課金細節也瞭若指掌，江湖老手！' },
+  good:    { char:'勇', msg:'頗有功底，劇情武學都難不倒你，繼續探索吧！' },
+  ok:      { char:'行', msg:'略有所知，多走走江湖便能融會貫通。' },
+  low:     { char:'學', msg:'燕雲之道廣博，路漫漫，慢慢來。' },
+};
+
+let qi = 0, score = 0, answered = false;
+const order = Array.from({length:50},(_,i)=>i);
+
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+const shuffled = shuffle(order);
+
+function render(){
+  answered = false;
+  const idx = shuffled[qi];
+  const q = QS[idx];
+  document.getElementById('qnum').textContent = qi+1;
+  document.getElementById('prog').style.width = ((qi+1)/50*100)+'%';
+  document.getElementById('qtext').textContent = q.q;
+
+  // Shuffle options but track correct
+  const optOrder = shuffle([0,1,2,3]);
+  const grid = document.getElementById('opts');
+  grid.innerHTML = '';
+  optOrder.forEach((origIdx, pos) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-label">${LABELS[pos]}</span>${q.o[origIdx]}`;
+    btn.dataset.orig = origIdx;
+    btn.onclick = () => pick(btn, origIdx, q.a, optOrder);
+    grid.appendChild(btn);
+  });
+
+  const r = document.getElementById('result');
+  r.className = 'result';
+  r.textContent = '';
+}
+
+function pick(btn, chosen, correct, optOrder){
+  if(answered) return;
+  answered = true;
+  document.querySelectorAll('.opt').forEach(b => {
+    b.disabled = true;
+    if(parseInt(b.dataset.orig) === correct) b.classList.add('correct');
+    else if(b === btn && chosen !== correct) b.classList.add('wrong');
+  });
+  const r = document.getElementById('result');
+  if(chosen === correct){
+    score++;
+    document.getElementById('score').textContent = score;
+    r.textContent = '✓ 答對了！';
+    r.className = 'result show ok';
+  } else {
+    const correctText = QS[shuffled[qi]].o[correct];
+    r.textContent = '✗ 答錯了！正確答案是：' + correctText;
+    r.className = 'result show no';
+  }
+  setTimeout(() => { qi++; if(qi < 50) render(); else showEnd(); }, 2200);
+}
+
+function showEnd(){
+  const pct = score/50;
+  let seal = pct === 1 ? SEALS.perfect : pct >= 0.8 ? SEALS.great : pct >= 0.6 ? SEALS.good : pct >= 0.4 ? SEALS.ok : SEALS.low;
+  document.getElementById('card').innerHTML = `
+    <div style="height:5px;background:linear-gradient(90deg,transparent,#c8960a 20%,#b83232 50%,#c8960a 80%,transparent)"></div>
+    <div class="card-inner">
+      <div class="header">
+        <div class="title-main">燕雲十六聲</div>
+        <div class="title-sub">江湖問答 · 完卷</div>
+      </div>
+      <div class="end-screen">
+        <div class="end-seal">${seal.char}</div>
+        <div class="end-title">問道完畢</div>
+        <div class="end-score">答對 <strong>${score}</strong> / 50 題</div>
+        <div class="end-msg">${seal.msg}</div>
+        <button class="restart-btn" onclick="location.reload()">重新問道</button>
+      </div>
+      <div class="watermark">燕雲問道 · 江湖無界</div>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>
